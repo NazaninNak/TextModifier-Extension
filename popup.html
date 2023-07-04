@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Simplifier</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- <script src="background.js" type="module"></script>
+      <script src="login.js" type="module"></script>
+      <script src="popup.js" type="module"></script> -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <script src="front.js" type="module"></script>
+  </head>
+  <body>
+    <div id="header" class="hidden">
+      <!-- <p>Username:</p> -->
+      <div>
+        <button id="getAbstract" class="btn hidden">Get Abstract</button>
+        <span id="remaininFeedbacks"></span>
+      </div>
+
+      <div class="flex-row">
+        <span id="header-username" class="tooltipUsername"
+          >Prolific Username<span class="tooltipUsernameText"
+            >Prolific Username</span
+          ></span
+        >
+        <!-- <span id="test" class="tooltipUsername"
+          >resr<span class="tooltipUsernameText">Prolific Username</span></span
+          > -->
+        <span class="logoutIcon-container tooltip" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="tooltipText">Logout</span>
+        </span>
+        <!-- <button class="closeBtn">X</button> -->
+      </div>
+
+      <!-- <button style="visibility: hidden" class="btn">Get Abstract</button> -->
+      <button id="closeBtn" class="closeBtn hidden">X</button>
+
+      <!-- <button id="logoutBtn" class="btn">
+        Logout
+        <i class="fas fa-sign-out-alt"></i>
+      </button> -->
+    </div>
+    <div id="instructions-container" class="instructions-container hidden">
+      <h6 style="font-weight: bold">Instructions:</h6>
+      <ol>
+        <li>
+          Please check your username from the top right corner of the page. If
+          you have entered a wrong username, logout and login again!
+        </li>
+        <li>
+          The "phrase of the day" is:
+          <span class="dailyPhrase" style="color: green"></span>
+        </li>
+        <li>
+          Go to pubmed website and use the search bar to find related articles
+          to this phrase.
+        </li>
+        <li>Open the article of your choice.</li>
+        <li>Start the study by clicking on the "Get Abstract" button.</li>
+        <li>
+          If you are going away from your keyword for few minutes, Please do not
+          leave the plugin (popup) open!
+        </li>
+      </ol>
+    </div>
+    <div class="container" id="container">
+      <!-- <div id="overlay"></div> -->
+      <!-- LOGIN SECTION  -->
+      <div class="login-container" id="login-container">
+        <h2>Sign in with your Prolific username</h2>
+        <form id="login-form">
+          <input
+            type="text"
+            id="username"
+            placeholder="Your Prolific Username"
+            required
+          />
+          <button type="submit">Sign In</button>
+        </form>
+      </div>
+      <!-- LOADER SECTION  -->
+      <div class="loader-container hidden">
+        <div>
+          <svg
+            class="pl"
+            viewBox="0 0 200 200"
+            width="200"
+            height="200"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="pl-grad1" x1="1" y1="0.5" x2="0" y2="0.5">
+                <stop offset="0%" stop-color="hsl(187,76.5%,50%)" />
+                <stop offset="100%" stop-color="hsl(7,76.5%,50%)" />
+              </linearGradient>
+              <linearGradient id="pl-grad2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="hsl(187,76.5%,50%)" />
+                <stop offset="100%" stop-color="hsl(7,76.5%,50%)" />
+              </linearGradient>
+            </defs>
+            <circle
+              class="pl__ring"
+              cx="100"
+              cy="100"
+              r="82"
+              fill="none"
+              stroke="url(#pl-grad1)"
+              stroke-width="36"
+              stroke-dasharray="0 257 1 257"
+              stroke-dashoffset="0.01"
+              stroke-linecap="round"
+              transform="rotate(-90,100,100)"
+            />
+            <line
+              class="pl__ball"
+              stroke="url(#pl-grad2)"
+              x1="100"
+              y1="18"
+              x2="100.01"
+              y2="182"
+              stroke-width="36"
+              stroke-dasharray="1 165"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <div class="loader-description">
+          <p>loading...</p>
+          <span>It might take a while</span>
+        </div>
+      </div>
+      <!-- SLIDER SECTION  -->
+      <!-- ABSTRACTS SECTION  -->
+      <div class="main-content hidden" id="main-content">
+        <div id="difficulty-lvl" class="">
+          <span class="difficulty-lvl__title"
+            >Change the level of the simplified text</span
+          >
+          <div class="difficulty-lvl__slider">
+            <label for="slider"></label>
+            <input
+              type="range"
+              id="difficulty-lvl__input"
+              name="slider"
+              min="0"
+              max="4"
+              step="1"
+              value="0"
+              list="tickmarks"
+              class="slider"
+              width="300px"
+            />
+            <datalist id="tickmarks">
+              <option value="0">Start</option>
+              <option value="1">V1</option>
+              <option value="2">V2</option>
+              <option value="3">V3</option>
+              <option value="4">Finish</option>
+            </datalist>
+          </div>
+        </div>
+        <div id="difficulty-lvl_instructions" class="hidden">
+          <p>
+            The "phrase of the day" is:
+            <span class="dailyPhrase" style="color: green"></span>
+          </p>
+          <ol>
+            <li>
+              By using the above slider, you can see the different versions of
+              the abstract.
+            </li>
+            <li>Read and rate all the 3 versions.</li>
+            <li>
+              Go to Finish section. In the text area, write down the keywords or
+              the phrases you used to get to this abstract.
+            </li>
+            <li>Submit & Finish the study by clicking on the button.</li>
+          </ol>
+        </div>
+        <div id="abstract-container">
+          <h4 class="original-title"></h4>
+          <h4 class="summary-title"></h4>
+          <p class="elementary-abs"></p>
+          <p class="advanced-abs"></p>
+          <p class="original-abs"></p>
+        </div>
+      </div>
+
+      <!-- INPUT SECTION FOR PILOT STUDY  -->
+
+      <div class="feedbackValue-container hidden" id="feedbackValue-container">
+        <p class="feedbackValue-description">
+          On a scale of 1 to 5, where 1 represents the easiest and 5 represents
+          the hardest, how challenging was this text for you to understand?
+        </p>
+        <form id="feedbackValueForm">
+          <input type="hidden" id="formName" value="" />
+          <div>
+            <div class="checkboxgroup">
+              <input type="radio" name="feedbackValue" value="1" id="radio1" />
+              <label for="radio1">1 Easiest</label>
+            </div>
+            <div class="checkboxgroup">
+              <input type="radio" name="feedbackValue" value="2" id="radio2" />
+              <label for="radio2">2</label>
+            </div>
+            <div class="checkboxgroup">
+              <input type="radio" name="feedbackValue" value="3" id="radio3" />
+              <label for="radio3">3</label>
+            </div>
+            <div class="checkboxgroup">
+              <input type="radio" name="feedbackValue" value="4" id="radio4" />
+              <label for="radio4">4</label>
+            </div>
+            <div class="checkboxgroup">
+              <input type="radio" name="feedbackValue" value="5" id="radio5" />
+              <label for="radio5">5 Hardest</label>
+            </div>
+          </div>
+          <button type="button" id="valueSubmitBtn" class="btn">Submit</button>
+        </form>
+        <div>
+          <p id="error" class="hidden" style="color: red">
+            Please choose an option!
+          </p>
+          <p id="result" class="hidden" style="color: green">
+            <i class="fa fa-check"></i>
+            Submitted!
+          </p>
+        </div>
+      </div>
+      <div class="feedbackText-container hidden" id="feedbackText-container">
+        <form class="feedbackTextForm flex-col" id="feedbackTextForm">
+          <div>
+            <p id="feedbackText-description" class="feedbackText-description">
+              Type your feedback here!
+            </p>
+          </div>
+          <textarea
+            type="text"
+            id="feedbackTextInput"
+            placeholder="Please add what keywords or phrases you used to find this article and also add a feedback to report any bugs you have encountered."
+          ></textarea>
+          <button type="button" id="finishBtn" class="btn">
+            Submit & Finish!
+          </button>
+        </form>
+        <p id="feedbackSubmisisonResult" class="hidden"></p>
+      </div>
+    </div>
+  </body>
+</html>
