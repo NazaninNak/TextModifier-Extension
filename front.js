@@ -9,13 +9,6 @@ let delta = 0;
 let timeType = "";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Close the popup window
-  // document.getElementById("closeBtn").addEventListener("click", function () {
-  //   window.close();
-  // });
-  const mainContentElement = document.getElementsByClassName("main-content")[0];
-  // const loaderContainerElement =this is
-  //   document.getElementsByClassName("loader-container")[0];
   chrome.tabs.query(
     { active: true, currentWindow: true },
     async function (tabs) {
@@ -24,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // To check if the URL is correct (containing this string)
       if (currentTab.url.indexOf("pubmed.ncbi.nlm.nih.gov") === -1) {
         document.getElementById("getAbstract").classList.add("hidden");
-
         const container = document.getElementById("container");
         const newArticleMsg = document.createElement("p");
         newArticleMsg.id = "newArticleMsg";
@@ -33,15 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const firstChild = container.firstChild; // Get the first child of the parent element
         container.insertBefore(newArticleMsg, firstChild);
-        // docuemnt
-        //   .getElementById("instructions-container")
-        //   .classList.add("hidden");
-        // mainContentElement.classList.remove("hidden");
-        // mainContentElement.innerHTML = `<div class="error-message"><i class="fas fa-exclamation"></i> This Website is not supported by the extension, please go to https://pubmed.ncbi.nlm.nih.gov/</div>`;
+        setTimeout(function () {
+          console.log("i am being triggered1");
+          document
+            .getElementById("feedbackValue-container")
+            .classList.add("hidden");
+          document
+            .getElementById("feedbackText-container")
+            .classList.add("hidden");
+        }, 300);
       } else if (!regex.test(currentTab.url)) {
         document.getElementById("getAbstract").classList.add("hidden");
-        // mainContentElement.innerHTML = `<div class="error-message"><i class="fas fa-exclamation"></i> You are on the correct website, but you need to open an article</div>`;
-
         const container = document.getElementById("container");
         const newArticleMsg = document.createElement("p");
         newArticleMsg.id = "newArticleMsg";
@@ -49,12 +43,27 @@ document.addEventListener("DOMContentLoaded", () => {
         newArticleMsg.innerHTML = `<p><i class="fas fa-exclamation"></i> You are on the correct website, but you need to open an article!</p>`;
         const firstChild = container.firstChild; // Get the first child of the parent element
         container.insertBefore(newArticleMsg, firstChild);
-        // docuemnt
-        //   .getElementById("instructions-container")
-        //   .classList.add("hidden");
+        setTimeout(function () {
+          console.log("i am being triggered2");
+          document
+            .getElementById("feedbackValue-container")
+            .classList.add("hidden");
+          document
+            .getElementById("feedbackText-container")
+            .classList.add("hidden");
+        }, 300);
       } else {
         // the next code is needed to throw an error when we dont have an abstract in an article!
         await getTabInformation(currentTab);
+        // setTimeout(function () {
+        //   console.log("i am being triggered3");
+        //   document
+        //     .getElementById("feedbackValue-container")
+        //     .classList.add("hidden");
+        //   document
+        //     .getElementById("feedbackText-container")
+        //     .classList.add("hidden");
+        // }, 300);
       }
     }
   );
@@ -92,26 +101,27 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.runtime.onMessage.addListener((message) => {
     // listening for a change in state
     if (message.action === "stateUpdate") {
+      console.log("hello");
       state = message.state;
       // showing the number of feedbacks
       updateStudyState();
-      // alerting the user its a  new article
+      // Removing the state if there is a new url
       if (state.abstractData) {
         if (currentTab.url != state.abstractData.url) {
           const regex = /^https:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/\d+\/$/;
-          if (regex.test(currentTab.url)) {
-            // chrome.runtime.sendMessage("newUrl");
-            if (!document.getElementById("newArticleMsg")) {
-              const container = document.getElementById("container");
-              const newArticleMsg = document.createElement("p");
-              // err.classList.add("error-message");
-              newArticleMsg.id = "newArticleMsg";
-              newArticleMsg.classList.add("error-message");
-              newArticleMsg.textContent = `You are on a new article page, to get the new result, click on the "get abstract" button at top left corner! (Below is the result of your previous abstract!)`;
-              const firstChild = container.firstChild; // Get the first child of the parent element
-              container.insertBefore(newArticleMsg, firstChild);
-            }
-          }
+          console.log("sending newurl message");
+          chrome.runtime.sendMessage({ action: "newUrl" });
+          setTimeout(function () {
+            console.log("i am being triggered1");
+            document
+              .getElementById("feedbackValue-container")
+              .classList.add("hidden");
+            document
+              .getElementById("feedbackText-container")
+              .classList.add("hidden");
+          }, 300);
+          // if (regex.test(currentTab.url)) {
+          // }
         }
       }
       // console.log("the state is,", state);
@@ -146,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
               .getElementById("feedbackValue-container")
               .classList.remove("hidden");
           }
+
+          //
           document.getElementsByClassName("summary-title")[0].textContent =
             message.state.abstractData.summerizedTitle;
           document.getElementsByClassName("original-title")[0].textContent =
@@ -203,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .classList.add("hidden");
       }
     } else if (message.action === "showLoading") {
+      console.log("am i showing loading");
       document
         .getElementsByClassName("loader-container")[0]
         .classList.remove("hidden");
@@ -228,7 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document
         .getElementById("feedbackTextForm")
         .appendChild(emptySubmissionError);
-      // console.log("i am not rugggngn");
     }
   });
 
@@ -421,7 +433,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
       .classList.remove("hidden");
 
     // Showing the elementary summary
-  } else if (difficultyLevel === "1") {
+  } else if (difficultyLevel === state.abstractData.shuffledArray[0]) {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -443,7 +455,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
     showElementaryAbstract();
 
     // Showing the advanced summary
-  } else if (difficultyLevel === "2") {
+  } else if (difficultyLevel === state.abstractData.shuffledArray[1]) {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -463,7 +475,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
     showAdvancedAbstract();
 
     // showing the original abs
-  } else if (difficultyLevel === "3") {
+  } else if (difficultyLevel === state.abstractData.shuffledArray[2]) {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -501,6 +513,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
       .classList.remove("hidden");
     document.getElementById("feedbackTextForm").classList.remove("hidden");
   }
+  console.log(state.abstractData.shuffledArray);
   updateFeedbackForm();
 }
 function emptyFeedbackForm() {
@@ -577,6 +590,3 @@ function updateStudyState() {
     dailyPhraseElements[i].textContent = state.dailyPhrase;
   }
 }
-// function hideAbstractsFeedbacks{
-
-// }
