@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Text Simplifier",
+  "name": "Text Modifier",
   "description": "This extentsion will modify text based on gpt-4",
   "version": "3.0",
   "background": {
