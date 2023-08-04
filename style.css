@@ -48,6 +48,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .dailyPhrase {
   font-weight: bold;
   font-family: var(--secondary-font);
@@ -69,7 +70,7 @@ body {
 #header span {
   margin-right: 10px;
 }
-#remaininFeedbacks {
+#remainingFeedbacks {
   font-size: 0.9rem;
   color: gray;
   font-family: var(--primary-font);
@@ -240,8 +241,15 @@ option {
   padding: 0;
 }
 input[type="range"] {
-  width: 200px;
-  margin: 0;
+  width: 400px;
+}
+
+/* .slider {
+  color: blue;
+  border-radius: 50px;
+} */
+#tickmarks option {
+  margin-right: 50px;
 }
 
 .loader-container {
@@ -525,7 +533,7 @@ input[type="radio"]:checked:before {
 
 .feedbackText-container textarea {
   width: 350px;
-  height: 200px;
+  height: 150px;
   border: solid 1px;
   background-color: var(--tertiary-color);
   padding: 1rem;
@@ -548,4 +556,19 @@ input[type="radio"]:checked:before {
   /* margin: 0 1%; */
   font-family: var(--secondary-font);
   color: green;
+}
+
+/*  Main Study  */
+.question-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.question-container .question {
+  margin-top: 1rem;
+  color: var(--secondary-color);
+  font-weight: bold;
+  font-family: var(--secondary-font);
+  max-width: 80%;
 }

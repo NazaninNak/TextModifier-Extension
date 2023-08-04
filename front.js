@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const firstChild = container.firstChild; // Get the first child of the parent element
         container.insertBefore(newArticleMsg, firstChild);
         setTimeout(function () {
-          console.log("i am being triggered1");
+          // console.log("i am being triggered1");
           document
             .getElementById("feedbackValue-container")
             .classList.add("hidden");
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const firstChild = container.firstChild; // Get the first child of the parent element
         container.insertBefore(newArticleMsg, firstChild);
         setTimeout(function () {
-          console.log("i am being triggered2");
+          // console.log("i am being triggered2");
           document
             .getElementById("feedbackValue-container")
             .classList.add("hidden");
@@ -101,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.runtime.onMessage.addListener((message) => {
     // listening for a change in state
     if (message.action === "stateUpdate") {
-      console.log("hello");
       state = message.state;
       // showing the number of feedbacks
       updateStudyState();
@@ -113,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
           chrome.runtime.sendMessage({ action: "newUrl" });
           // document.getElementById("difficulty-lvl__input").value = "0";
           setTimeout(function () {
-            console.log("i am being triggered1");
+            // console.log("i am being triggered1");
             document
               .getElementById("feedbackValue-container")
               .classList.add("hidden");
@@ -191,19 +190,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (message.state.feedback) {
         updateFeedbackForm();
         if (message.state.feedback.status === "failed") {
-          document
-            .getElementById("feedbackSubmisisonResult")
-            .classList.remove("hidden");
-          document.getElementById("feedbackSubmisisonResult").textContent =
-            message.state.feedback.message;
+          let feedbackSubmisisonResult = document.getElementById(
+            "feedbackSubmisisonResult"
+          );
+          feedbackSubmisisonResult.classList.remove("hidden");
+          feedbackSubmisisonResult.style.color = "green";
+
+          feedbackSubmisisonResult.textContent = message.state.feedback.message;
         } else if (message.state.feedback.status === "sent") {
           document.getElementById("feedbackTextForm").classList.add("hidden");
-          document
-            .getElementById("feedbackSubmisisonResult")
-            .classList.remove("hidden");
-          document.getElementById("feedbackSubmisisonResult").textContent =
-            message.state.feedback.message;
+          feedbackSubmisisonResult.classList.remove("hidden");
+          feedbackSubmisisonResult.style.color = "green";
+          feedbackSubmisisonResult.textContent = message.state.feedback.message;
+          document.getElementById("Q1Text").value = "";
+          document.getElementById("Q2Text").value = "";
+          document.getElementById("Q3Text").value = "";
         } else if (message.state.feedback.status === "empty") {
+          feedbackSubmisisonResult.classList.remove("hidden");
+          feedbackSubmisisonResult.textContent = message.state.feedback.message;
+          feedbackSubmisisonResult.style.color = "red";
         }
       }
       if (!message.state.instructionShown && message.state.accessToken) {
@@ -216,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .classList.add("hidden");
       }
     } else if (message.action === "showLoading") {
-      console.log("am i showing loading");
+      // console.log("am i showing loading");
       document
         .getElementsByClassName("loader-container")[0]
         .classList.remove("hidden");
@@ -235,14 +240,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const firstChild = container.firstChild; // Get the first child of the parent element
       container.insertBefore(err, firstChild);
       // console.log("requestSummaryError", message.err);
-    } else if (message.action === "emptySubmissionError") {
-      const emptySubmissionError = document.createElement("p");
-      emptySubmissionError.style.color = "red";
-      emptySubmissionError.textContent = message.err;
-      document
-        .getElementById("feedbackTextForm")
-        .appendChild(emptySubmissionError);
     }
+    // else if (message.action === "emptySubmissionError") {
+    //   const emptySubmissionError = document.createElement("p");
+    //   emptySubmissionError.style.color = "red";
+    //   emptySubmissionError.textContent = message.err;
+    //   document
+    //     .getElementById("feedbackTextForm")
+    //     .appendChild(emptySubmissionError);
+    // }
   });
 
   // LOGIN
@@ -275,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
   difficultyLvlInput.addEventListener("input", () => {
     sliderUpdated(difficultyLvlInput.value, true); // true indicates that user has manually updated the difficulty Slider
   });
-  //FEEDBACK RADIO
+  // FEEDBACK RADIO
   document.getElementById("valueSubmitBtn").addEventListener("click", () => {
     const formName = document.getElementById("formName").value;
     var feedbackType = "";
@@ -322,10 +328,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Finish
   document.getElementById("finishBtn").addEventListener("click", () => {
-    const feedbackText = document.getElementById("feedbackTextInput").value;
+    var radios = document.getElementsByName("multipleChoice");
+    var multipleChoice = null;
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) {
+        multipleChoice = radios[i].value;
+        break;
+      }
+    }
+    const Q1Text = document.getElementById("Q1Text").value;
+    const Q2Text = document.getElementById("Q2Text").value;
+    const Q3Text = document.getElementById("Q3Text").value;
+    var onBoardingQuestionnaire = {
+      multipleChoice: multipleChoice,
+      Q1Text: Q1Text,
+      Q2Text: Q2Text,
+      Q3Text: Q3Text,
+    };
+    // const feedbackText = document.getElementById("feedbackTextInput").value;
+    console.log(onBoardingQuestionnaire);
+
     chrome.runtime.sendMessage({
-      action: "feedbackTextSubmitted",
-      feedbackText,
+      action: "answersSubmitted",
+      onBoardingQuestionnaire,
     });
   });
   chrome.runtime.sendMessage({ action: "state" });
@@ -434,7 +459,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
       .classList.remove("hidden");
 
     // Showing the elementary summary
-  } else if (difficultyLevel === state.abstractData.shuffledArray[0]) {
+  } else if (difficultyLevel === "1") {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -456,7 +481,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
     showElementaryAbstract();
 
     // Showing the advanced summary
-  } else if (difficultyLevel === state.abstractData.shuffledArray[1]) {
+  } else if (difficultyLevel === "2") {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -476,7 +501,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
     showAdvancedAbstract();
 
     // showing the original abs
-  } else if (difficultyLevel === state.abstractData.shuffledArray[2]) {
+  } else if (difficultyLevel === "3") {
     if (timeValue) {
       let delta = Date.now() - timeValue;
       chrome.runtime.sendMessage({ action: "timeUpdate", delta, timeType });
@@ -514,7 +539,7 @@ function sliderUpdated(difficultyLevel, shouldUpdateBackend) {
       .classList.remove("hidden");
     document.getElementById("feedbackTextForm").classList.remove("hidden");
   }
-  console.log(state.abstractData.shuffledArray);
+  // console.log(state.abstractData.shuffledArray);
   updateFeedbackForm();
 }
 function emptyFeedbackForm() {
@@ -573,17 +598,40 @@ function removeElement(elementId) {
   }
 }
 function updateStudyState() {
+  const dailyQuestions = document.querySelectorAll(".dailyQuestions");
+  dailyQuestions.forEach((element) => {
+    element.classList.add("hidden");
+  });
   if (state.remainingFeedbacks <= 0) {
-    document.getElementById(
-      "remaininFeedbacks"
-    ).innerHTML = ` <a href="https://docs.google.com/forms/d/e/1FAIpQLSdPUnbrSiH7Q45X-ncwy4O5qZ3M-VD3JcYn7v1L6-coPZcsBA/viewform" target="_blank">Post-Questionnaire</a>`;
+    if (state.isStudyCompleted) {
+      // console.log("i am completed");
+      document.getElementById(
+        "remainingFeedbacks"
+      ).innerHTML = ` <a href="https://docs.google.com/forms/d/e/1FAIpQLSdPUnbrSiH7Q45X-ncwy4O5qZ3M-VD3JcYn7v1L6-coPZcsBA/viewform" target="_blank">Post-Questionnaire</a>`;
+    } else {
+      document.getElementById("remainingFeedbacks").textContent =
+        " 0 Daily Submission Remaining";
+    }
+  } else if (state.remainingFeedbacks == 1) {
+    const dailyQuestions = document.querySelectorAll(".dailyQuestions");
+    dailyQuestions.forEach((element) => {
+      element.classList.remove("hidden");
+
+      document.getElementById("remainingFeedbacks").textContent =
+        " " +
+        state.remainingFeedbacks +
+        (state.remainingFeedbacks <= 1
+          ? " Daily Submission Remaining"
+          : " Daily Submissions Remaining");
+    });
+    // show the last 2 question
   } else {
-    document.getElementById("remaininFeedbacks").textContent =
+    document.getElementById("remainingFeedbacks").textContent =
       " " +
       state.remainingFeedbacks +
       (state.remainingFeedbacks <= 1
-        ? " Submission Remaining"
-        : " Submissions Remaining");
+        ? " Daily Submission Remaining"
+        : " Daily Submissions Remaining");
   }
   const dailyPhraseElements = document.getElementsByClassName("dailyPhrase");
 

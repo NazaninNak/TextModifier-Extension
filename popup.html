@@ -20,7 +20,7 @@
       <!-- <p>Username:</p> -->
       <div>
         <button id="getAbstract" class="btn hidden">Get Abstract</button>
-        <span id="remaininFeedbacks"></span>
+        <span id="remainingFeedbacks"></span>
       </div>
 
       <div class="flex-row">
@@ -51,8 +51,9 @@
       <h6 style="font-weight: bold">Instructions:</h6>
       <ol>
         <li>
-          Please check your username from the top right corner of the page. If
-          you have entered a wrong username, logout and login again!
+          Please check your <b> Prolific username</b> from the top right corner
+          of the page. If you have entered a wrong username, logout and login
+          again!
         </li>
         <li>
           The "phrase of the day" is:
@@ -155,13 +156,12 @@
               value="0"
               list="tickmarks"
               class="slider"
-              width="300px"
             />
             <datalist id="tickmarks">
               <option value="0">Start</option>
-              <option value="1">V1</option>
-              <option value="2">V2</option>
-              <option value="3">V3</option>
+              <option value="1">Elementary</option>
+              <option value="2">Advanced</option>
+              <option value="3">Original</option>
               <option value="4">Finish</option>
             </datalist>
           </div>
@@ -177,11 +177,17 @@
               abstract.
             </li>
             <li>Read and rate all the 3 versions.</li>
+            <li>Go to the Finish section. Answer the questions and submit.</li>
             <li>
-              Go to Finish section. In the text area, write down the keywords or
-              the phrases you used to get to this abstract.
+              You need to repeat these steps for 3 different articles each day.
             </li>
-            <li>Submit & Finish the study by clicking on the button.</li>
+            <li>
+              You can see the remaining daily submission next to "Get Abstract"
+              button.
+            </li>
+            <li>
+              After the fifth day, you will see the post-questionnaire link.
+            </li>
           </ol>
         </div>
         <div id="abstract-container">
@@ -224,7 +230,7 @@
               <label for="radio5">5 (Extremely Hard)</label>
             </div>
           </div>
-          <button type="button" id="valueSubmitBtn" class="btn">Submit</button>
+          <button type="button" id="valueSubmitBtn" class="btn">Rate</button>
         </form>
         <div>
           <p id="error" class="hidden" style="color: red">
@@ -236,18 +242,81 @@
           </p>
         </div>
       </div>
+
+      <!-- INPUT SECTION FOR MAIN STUDY  -->
       <div class="feedbackText-container hidden" id="feedbackText-container">
         <form class="feedbackTextForm flex-col" id="feedbackTextForm">
-          <div>
-            <p id="feedbackText-description" class="feedbackText-description">
-              Type your search keywords here!
+          <hr
+            style="border: 1px solid rgb(140, 183, 205); width: 100%; height: 0"
+          />
+          <!-- <div class="question-container">
+            <p class="question">
+              1. Please explain why did you choose this article:
             </p>
+            <textarea type="text" id="Q1Text" placeholder=""></textarea>
+          </div> -->
+          <!-- <hr style="border: 1px dotted purple; width: 90%; height: 0" /> -->
+
+          <div class="question-container">
+            <p class="feedbackText-description question question">
+              1. Which abstract version did you prefer to read?
+            </p>
+            <div class="flex-row">
+              <div class="checkboxgroup">
+                <input
+                  type="radio"
+                  name="multipleChoice"
+                  value="1"
+                  id="radio1"
+                />
+                <label for="radio1">Elementary</label>
+              </div>
+              <div class="checkboxgroup">
+                <input
+                  type="radio"
+                  name="multipleChoice"
+                  value="2"
+                  id="radio2"
+                />
+                <label for="radio2">Advanced</label>
+              </div>
+              <div class="checkboxgroup">
+                <input
+                  type="radio"
+                  name="multipleChoice"
+                  value="3"
+                  id="radio3"
+                />
+                <label for="radio3">Original</label>
+              </div>
+            </div>
           </div>
-          <textarea
-            type="text"
-            id="feedbackTextInput"
-            placeholder="Please submit what keywords or phrases you used to find this article."
-          ></textarea>
+
+          <hr style="border: 1px dotted purple; width: 90%; height: 0" />
+          <div class="question-container">
+            <p class="question">2. Justify your Above Answer:</p>
+            <textarea type="text" id="Q1Text" placeholder=""></textarea>
+          </div>
+
+          <div class="question-container dailyQuestions hidden">
+            <hr style="border: 1px dotted purple; width: 90%; height: 0" />
+
+            <p class="question">
+              3. Explain what did you learn from today's topic after reading
+              these 3 articles?
+            </p>
+            <textarea type="text" id="Q2Text" placeholder=""></textarea>
+          </div>
+
+          <div class="question-container dailyQuestions hidden">
+            <hr style="border: 1px dotted purple; width: 90%; height: 0" />
+
+            <p id="" class="question">
+              4. Has your understanding of the topic changed after reading these
+              articles? Why/why not?
+            </p>
+            <textarea type="text" id="Q3Text" placeholder=""></textarea>
+          </div>
           <button type="button" id="finishBtn" class="btn">
             Submit & Finish!
           </button>

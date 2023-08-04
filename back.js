@@ -84,8 +84,8 @@ chrome.runtime.onMessage.addListener(async (message) => {
         let result = await requestSummary(message.abstractInformation);
         state.abstractData = result.abstract;
         state.feedback = result.feedback;
-        state.abstractData.shuffledArray = shuffleArray(["1", "2", "3"]);
-        console.log(state.abstractData.shuffledArray);
+        // state.abstractData.shuffledArray = shuffleArray(["1", "2", "3"]);
+        // console.log(state.abstractData.shuffledArray);
         if (!state.feedback) {
           state.feedback = {
             originalTime: 0,
@@ -95,7 +95,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
         } else {
           state.feedback.status = "sent";
           state.feedback.message =
-            "You have already submitted a feedback for this article!";
+            "You have already read this article and submitted your answers. If there are remaining daily submissions, choose another article!";
         }
       } catch (error) {
         // console.log(error.message);
@@ -126,6 +126,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
         originalTime: 0,
         advancedTime: 0,
         elementaryTime: 0,
+        onBoardingQuestionnaire: {},
       },
     };
     // console.log("the user logged out in back");
@@ -140,16 +141,21 @@ chrome.runtime.onMessage.addListener(async (message) => {
   } else if (message.action === "sendDifficultyLevel") {
     state.difficultyLevel = message.difficultyLevel;
     // console.log("im difficult", state.difficultyLevel);
-  } else if (message.action === "feedbackTextSubmitted") {
+  } else if (message.action === "answersSubmitted") {
     // if (!state.feedback) {
     //   state.feedback = {};
     // }
-    state.feedback.text = message.feedbackText;
+    state.feedback.onBoardingQuestionnaire = message.onBoardingQuestionnaire;
+    // state.feedback.
     if (
       state.feedback.elementaryDifficulty &&
       state.feedback.advancedDifficulty &&
       state.feedback.originalDifficulty &&
-      state.feedback.text
+      state.feedback.onBoardingQuestionnaire.Q1Text &&
+      state.feedback.onBoardingQuestionnaire.multipleChoice &&
+      ((state.feedback.onBoardingQuestionnaire.Q2Text &&
+        state.feedback.onBoardingQuestionnaire.Q3Text) ||
+        state.remainingFeedbacks != 1)
     ) {
       let result = {};
       try {
@@ -164,27 +170,32 @@ chrome.runtime.onMessage.addListener(async (message) => {
         state.feedback.message = "Feedback submission failed!";
       } else {
         if (state.remainingFeedbacks <= 0) {
-          // console.log("i am not executed");
-          state.feedback.status = "sent";
-          state.feedback.message = `Feedback submission was succesfull, you have finished all of your tasks, please continue the study by going to post-questionnaire (next to "Get Abstract" button)`;
+          // add two questions
+          if (state.isStudyCompleted) {
+            state.feedback.status = "sent";
+            state.feedback.message = `Submission was succesfull. You have done all of your 5days tasks. Please find the Post-Questionnaire link next to "Get Abstract" button and fill it and finish the study.`;
+          } else {
+            state.feedback.status = "sent";
+            state.feedback.message = `Submission was succesfull, you have finished all of your tasks for today, please come back tomorrow for the next daily topic.`;
+          }
         } else {
           let message =
             state.remainingFeedbacks <= 1
-              ? " remaining article"
-              : " remaining articles";
+              ? " remaining daily submission"
+              : " remaining daily submissions";
           state.feedback.status = "sent";
-          state.feedback.message = `Feedback submission was successfull, you have ${state.remainingFeedbacks}${message} to read and submit a feedback!`;
+          state.feedback.message = `Submission was successfull. You have ${state.remainingFeedbacks}${message}, please choose another article!`;
         }
+        state.feedback.onBoardingQuestionnaire = {};
       }
-      // console.log("i am the result of the send feedback", result);
       await updateStudyStatus();
     } else {
       // show and erro to user here
-      console.log(
-        "Please fill all the values for each version and add a feedback."
-      );
+      console.log("Please answer all the questions and rate each version.");
+      // state.feedback.message =
+      //   "Please fill all the values for each version and add a feedback.";
       state.feedback.message =
-        "Please fill all the values for each version and add a feedback.";
+        "Please answer all the quetsions and rate each version.";
       state.feedback.status = "empty";
       chrome.runtime.sendMessage({
         action: "emptySubmissionError",
@@ -214,7 +225,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
     console.log("after", state);
   }
 
-  console.log("i am constantly rnning");
+  // console.log("i am constantly rnning");
   chrome.runtime.sendMessage({ action: "stateUpdate", state });
 });
 
@@ -320,15 +331,25 @@ async function requestStudyStatus() {
 }
 
 async function sendFeedback(feedback) {
+  // const {
+  //   elementaryDifficulty,
+  //   advancedDifficulty,
+  //   originalDifficulty,
+  //   text,
+  //   originalTime,
+  //   advancedTime,
+  //   elementaryTime,
+  // } = feedback;
   const {
     elementaryDifficulty,
     advancedDifficulty,
     originalDifficulty,
-    text,
+    onBoardingQuestionnaire,
     originalTime,
     advancedTime,
     elementaryTime,
   } = feedback;
+  // console.log(feedback);
   return new Promise((resolve, reject) => {
     chrome.storage.local.get("accessToken", async function (data) {
       const accessToken = data.accessToken;
@@ -338,11 +359,22 @@ async function sendFeedback(feedback) {
           "Content-Type": "application/json",
           Authorization: "JWT " + accessToken,
         },
+        // body: JSON.stringify({
+        //   elementaryDifficulty,
+        //   advancedDifficulty,
+        //   originalDifficulty,
+        //   text,
+        //   originalTime,
+        //   advancedTime,
+        //   elementaryTime,
+        //   interactionID: state.abstractData.interactionID,
+        //   abstractID: state.abstractData._id,
+        // }),
         body: JSON.stringify({
           elementaryDifficulty,
           advancedDifficulty,
           originalDifficulty,
-          text,
+          onBoardingQuestionnaire,
           originalTime,
           advancedTime,
           elementaryTime,
@@ -395,17 +427,23 @@ async function setChromeStorage() {
 async function updateStudyStatus() {
   let studyStatus = await requestStudyStatus();
   state.numberOfDailyFeedbacks = studyStatus.dailyFeedbacks.length;
+  state.isStudyCompleted = studyStatus.isCompleted;
   let remainingFeedbacks =
     studyStatus.requiredFeedbacks - studyStatus.dailyFeedbacks.length;
   state.dailyPhrase = studyStatus.dailyPhrase;
   state.remainingFeedbacks = remainingFeedbacks;
+  // console.log(
+  //   "remaining and ",
+  //   studyStatus.dailyFeedbacks.length,
+  //   studyStatus.requiredFeedbacks
+  // );
   return;
 }
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+// function shuffleArray(array) {
+//   for (let i = array.length - 1; i > 0; i--) {
+//     const j = Math.floor(Math.random() * (i + 1));
+//     [array[i], array[j]] = [array[j], array[i]];
+//   }
+//   return array;
+// }
